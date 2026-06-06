@@ -3,7 +3,6 @@ import time
 import os
 import json
 from pathlib import Path
-from fastapi import HTTPException
 
 # TODO: создать Celery app с именем 'tasks'
 # Укажите broker и backend — оба смотрят на Redis на localhost:6379
@@ -17,7 +16,7 @@ CONFIG_PATH = Path(os.getenv("CONFIG_PATH", "config.json"))
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
-        raise HTTPException(status_code=500, detail=f"Config not found: {CONFIG_PATH}")
+        raise FileNotFoundError(f"Config not found: {CONFIG_PATH}")
     with open(CONFIG_PATH) as f:
         return json.load(f)
 

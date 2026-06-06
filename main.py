@@ -6,6 +6,9 @@ import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+# TODO: добавить импорты для Celery
+from tasks import app as celery_app, run_inference
+
 app = FastAPI(title="Temperature Classifier")
 
 CONFIG_PATH = Path(os.getenv("CONFIG_PATH", "config.json"))
@@ -44,19 +47,53 @@ def classify(request: ClassifyRequest):
 def health():
     return {"status": "ok"}
 
-# TODO: добавить импорты для Celery
-# from tasks import app as celery_app, run_inference
 
+# 2. Добавить в main.py два эндпоинта
 # TODO: добавить модели ответов
-# class JobResponse(BaseModel): ...
-# class JobResult(BaseModel): ...
+# Ответ при создании задачи
+class JobResponse(BaseModel):
+    job_id: str
+    status: str
+
+# Ответ при проверке статуса задачи
+class JobResult(BaseModel):
+    status: str
+    result: dict
 
 # TODO: реализовать POST /jobs
-# @app.post("/jobs", ...)
-# def create_job(request: ClassifyRequest): ...
+# Создаёт асинхронную задачу классификации
+@app.post("/jobs", response_model=JobResponse)
+def create_job(request: ClassifyRequest):
+    payload = {"temperature": request.temperature}
+    task = run_inference.delay(payload)
+    
+    return JobResponse(
+        job_id=task.id,
+        status="queued"
+    )
+    
 
 # TODO: реализовать GET /jobs/{job_id}
-# @app.get("/jobs/{job_id}", ...)
-# def get_job(job_id: str):
-#     task = celery_app.AsyncResult(job_id)  # явная привязка к app, не AsyncResult из celery.result
-#     ...
+# Проверяет статус задачи по job_id. Возвращает статус и результат
+@app.get("/jobs/{job_id}", response_model=JobResult)
+def get_job(job_id: str):
+    task = celery_app.AsyncResult(job_id)  # явная привязка к app, не AsyncResult из celery.result
+
+    if task.state == "PENDING":
+        return JobResult(status="queued", result=None)
+    
+    elif task.state == "STARTED":
+        return JobResult(status="started", result=None)
+    
+    elif task.state == "SUCCESS":
+        return JobResult(status="done", result=task.result)
+    
+    elif task.state == "FAILURE":
+        return JobResult(status="failed", result={"error": str(task.info)})
+    
+    else:
+        return JobResult(status=task.state.lower(), result=None)
+        
+
+        
+    

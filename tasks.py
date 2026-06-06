@@ -1,5 +1,9 @@
 from celery import Celery
 import time
+import os
+import json
+from pathlib import Path
+from fastapi import HTTPException
 
 # TODO: создать Celery app с именем 'tasks'
 # Укажите broker и backend — оба смотрят на Redis на localhost:6379
@@ -9,12 +13,33 @@ app = Celery(
     backend='redis://localhost:6379/0'    # TODO: заполнено — нужен для хранения результатов
 )
 
+CONFIG_PATH = Path(os.getenv("CONFIG_PATH", "config.json"))
+
+def load_config() -> dict:
+    if not CONFIG_PATH.exists():
+        raise HTTPException(status_code=500, detail=f"Config not found: {CONFIG_PATH}")
+    with open(CONFIG_PATH) as f:
+        return json.load(f)
+
 
 @app.task
 def run_inference(payload: dict) -> dict:
     # TODO: добавить имитацию тяжёлой задачи
-    # Подсказка: time.sleep(N) — «модель думает» N секунд
-    pass  # TODO: удалить и написать реализацию
+    time.sleep(2) # — «модель думает» 2 секунды
+    
+    t = payload["temperature"]
+    
+    config = load_config() # идем в config.json за данными
+    
+    if t < config["cold_max"]:
+        category = "cold"
+    elif t > config["hot_min"]:
+        category = "hot"
+    else:
+        category = "comfortable"
 
     # TODO: вернуть словарь с результатом
-    # Пример: {"category": "hot", "temperature": 35.0}
+    return {
+        "category": category,
+        "temperature": t
+    }

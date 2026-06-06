@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import time
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -41,9 +42,7 @@ def classify(request: ClassifyRequest):
 
 @app.get("/health")
 def health():
-    
     return {"status": "ok"}
-
 
 # TODO: добавить импорты для Celery
 # from tasks import app as celery_app, run_inference

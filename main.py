@@ -41,6 +41,7 @@ def classify(request: ClassifyRequest):
 
 @app.get("/health")
 def health():
+    
     return {"status": "ok"}
 
 

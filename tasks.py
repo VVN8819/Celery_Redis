@@ -8,8 +8,9 @@ from pathlib import Path
 # Укажите broker и backend — оба смотрят на Redis на localhost:6379
 app = Celery(
     'tasks',
-    broker='redis://localhost:6379/0',    # TODO: заполнено — проверьте, что Redis запущен
-    backend='redis://localhost:6379/0'    # TODO: заполнено — нужен для хранения результатов
+    broker='redis://redis-broker:6379/0',    # TODO: заполнено — проверьте, что Redis запущен
+    backend='redis://redis-broker:6379/0',    # TODO: заполнено — нужен для хранения результатов
+    broker_connection_retry_on_startup=True
 )
 
 CONFIG_PATH = Path(os.getenv("CONFIG_PATH", "config.json"))

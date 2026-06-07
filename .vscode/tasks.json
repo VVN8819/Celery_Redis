@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Test: Parallel Jobs",
+      "type": "shell",
+      "command": "python",
+      "args": [".vscode/test_parallel.py"],
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

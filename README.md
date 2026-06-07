@@ -47,3 +47,17 @@ curl -s http://localhost:8000/jobs/$JOB_ID | python -m json.tool
 }
 
 Ответ: Ссылка на скрин https://imgbox.com/38uIgnaO
+
+# Opt-2 — Несколько параллельных задач
+Отправьте 3 задачи почти одновременно:
+
+for i in 10 20 35; do
+ curl -s -X POST http://localhost:8000/jobs \
+ -H "Content-Type: application/json" \
+ -d "{\"temperature\": $i}" &
+
+done
+
+wait
+
+Ответ: Ссылка на скрин https://imgbox.com/fHvjSEAH

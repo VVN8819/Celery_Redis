@@ -11,6 +11,9 @@
 
 CELERY_REDIS/
 
+    .vscode
+        tasks.json - автоматизация тестирования параллельных задач
+        test_parallel.py - отправка и проверка статусов нескольких параллельных задач ThreadPoolExecutor
     main.py - FastAPI приложение (эндпоинты)
     tasks.py - Celery задачи (фоновая обработка)
     config.json - Пороги температур (cold_max, hot_min)
